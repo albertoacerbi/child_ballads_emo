@@ -1,5 +1,6 @@
 library(tidyverse)
 library(htm2txt)
+library(hunspell)
 library(tidytext)
 
 url <- "https://www.sacred-texts.com/neu/eng/child/"
@@ -36,16 +37,27 @@ process_child <- function(list_of_pages, page_number){
 # SENTIMENT ANALYSIS:
 LIWC_negemo <- read_csv("negemo.csv")
 LIWC_posemo <- read_csv("posemo.csv")
-LIWC <- data_frame( word=c(LIWC_negemo$Negative,LIWC_posemo$Positive ),
+LIWC <- tibble( word=c(LIWC_negemo$Negative,LIWC_posemo$Positive ),
                     sentiment=c(rep("negative",2108), rep("positive",1903)))
 
 output <- tibble(positive = rep(NA,305), negative = NA)
 for(i in 1:305) {
   test <- process_child(list_of_pages, i)
-  temp <- dim(test)[1]
+  english_words <- sum(hunspell_check(out$word, dict = dictionary("en_GB")))
   test <- test%>%
     inner_join(LIWC) %>%
     count(sentiment)
-  output$positive[i] <- test$n[2] / temp
-  output$negative[i] <- test$n[1] / temp
+  output$positive[i] <- test$n[2] / english_words
+  output$negative[i] <- test$n[1] / english_words
+  print(i)
 }
+
+write_csv(output, "output.csv")
+
+mean(output$positive, na.rm = TRUE)
+# [1] 0.04966307
+mean(output$negative, na.rm = TRUE)
+# [1] 0.01839522
+
+
+  
