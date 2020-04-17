@@ -53,6 +53,8 @@ for(i in 1:305) {
 }
 
 write_csv(output, "output.csv")
+# OR:
+output <- read_csv("output.csv")
 
 mean(output$positive, na.rm = TRUE)
 # [1] 0.04966307
